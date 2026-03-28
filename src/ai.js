@@ -60,7 +60,7 @@ function withTimeout(promise, ms = API_TIMEOUT_MS) {
 
 // ─── Build prompt ─────────────────────────────────────────────────────────────
 
-function buildPrompt({ mode, diff, branch, scope, extraInstruction, language }) {
+function buildPrompt({ mode, diff, branch, scope, ticket, rules, extraInstruction, language }) {
   const modeConfig = MODES.find((m) => m.value === mode);
   if (!modeConfig) throw new Error(`Mode inconnu : ${mode}`);
 
@@ -81,9 +81,20 @@ function buildPrompt({ mode, diff, branch, scope, extraInstruction, language }) 
     prompt += `\nCurrent branch: "${branch}". Use this context to understand the purpose of the changes.`;
   }
 
+  // Add ticket context
+  if (ticket) {
+    prompt += `\nInclude the ticket reference "${ticket}" in the commit message. A common practice is to put "Ref: ${ticket}" in the footer of the message (the very last line).`;
+  }
+
   // Add extra instruction
   if (extraInstruction) {
     prompt += `\nAdditional instruction: ${extraInstruction}`;
+  }
+
+  // Add project rules
+  if (rules) {
+    const rulesText = Array.isArray(rules) ? rules.join("\n- ") : rules;
+    prompt += `\nProject-specific rules to follow:\n${Array.isArray(rules) ? "- " : ""}${rulesText}`;
   }
 
   prompt += `\n\nGit diff:\n\`\`\`\n${diff}\n\`\`\``;
@@ -96,13 +107,15 @@ function buildPrompt({ mode, diff, branch, scope, extraInstruction, language }) 
 export async function generateCommit(apiKey, diff, mode, {
   branch = null,
   scope = null,
+  ticket = null,
+  rules = null,
   extraInstruction = "",
   language = "en",
   modelName = DEFAULT_MODEL,
   onStream = null,
 } = {}) {
   const model = getModel(apiKey, modelName);
-  const prompt = buildPrompt({ mode, diff, branch, scope, extraInstruction, language });
+  const prompt = buildPrompt({ mode, diff, branch, scope, ticket, rules, extraInstruction, language });
 
   return withRetry(async () => {
     // Use streaming if a callback is provided

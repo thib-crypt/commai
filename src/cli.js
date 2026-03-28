@@ -1,12 +1,14 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
 import ora from "ora";
+import { writeFileSync, chmodSync } from "fs";
+import { join } from "path";
 import MODES from "./modes.js";
 import { loadConfig, saveConfig, getApiKey, getEffectiveConfig } from "./config.js";
 import {
   createGit, isGitRepo, getSmartDiff,
   getStagedFiles, getCurrentBranch,
-  parseBranchScope, detectScopeFromFiles,
+  parseBranchScope, detectScopeFromFiles, stageFiles,
 } from "./git.js";
 import {
   generateCommit, createChatSession,
@@ -20,6 +22,35 @@ import {
 } from "./ui.js";
 import { initI18n, t, setInterfaceLanguage, getInterfaceLanguage } from "./i18n.js";
 import { runSettingsMenu } from "./settings.js";
+
+async function installHook() {
+  const git = createGit();
+  if (!(await isGitRepo(git))) {
+    console.error(chalk.red(t("git.notRepo")));
+    process.exit(1);
+  }
+
+  const hookPath = join(process.cwd(), ".git", "hooks", "prepare-commit-msg");
+  const hookContent = `#!/bin/sh
+# Commai Git Hook
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Only run if it's a fresh commit (not merge or squash)
+if [ -z "$COMMIT_SOURCE" ]; then
+  exec < /dev/tty
+  commai --hook "$COMMIT_MSG_FILE"
+fi
+`;
+
+  try {
+    writeFileSync(hookPath, hookContent);
+    chmodSync(hookPath, "0755");
+    console.log(chalk.green(t("git.hookInstalled")));
+  } catch (err) {
+    console.error(chalk.red(t("git.hookError") + err.message));
+  }
+}
 
 // ─── Setup API key ────────────────────────────────────────────────────────────
 
@@ -177,20 +208,40 @@ async function chatMode(apiKey, diff, initialMessage) {
 // ─── Commit & push ────────────────────────────────────────────────────────────
 
 async function doCommit(git, commitMessage, autoPush) {
-  // Stage all if nothing staged
-  const { status } = await getStagedFiles(git);
-  if (status.staged.length === 0 && status.created.length === 0) {
-    const { stageAll } = await inquirer.prompt([
+  // Stage interactif s'il n'y a rien de stagé
+  const { staged, unstaged } = await getStagedFiles(git);
+  
+  if (staged.length === 0) {
+    if (unstaged.length === 0) {
+      console.log(chalk.yellow(t("git.noChanges")));
+      process.exit(0);
+    }
+
+    const { selectedFiles } = await inquirer.prompt([
       {
-        type: "confirm",
-        name: "stageAll",
+        type: "checkbox",
+        name: "selectedFiles",
         message: t("git.noStaged"),
-        default: true,
+        choices: [
+          { name: `[${t("git.addAll")}]`, value: "all" },
+          new inquirer.Separator(),
+          ...unstaged.map(f => ({ name: f, value: f }))
+        ],
+        loop: false,
       },
     ]);
-    if (stageAll) {
+
+    if (selectedFiles.length === 0) {
+      console.log(chalk.dim(t("actions.cancelled")));
+      process.exit(0);
+    }
+
+    if (selectedFiles.includes("all")) {
       await git.add("-A");
       console.log(chalk.green(t("git.stagedAll")));
+    } else {
+      await stageFiles(git, selectedFiles);
+      console.log(chalk.green(`✅ ${selectedFiles.length} ${t("ui.staged").toLowerCase()}`));
     }
   }
 
@@ -301,6 +352,12 @@ export async function main() {
     process.exit(0);
   }
 
+  // ── Handle --install-hook ──
+  if (args.includes("--install-hook")) {
+    await installHook();
+    process.exit(0);
+  }
+
   // ── Handle --settings ──
   if (args.includes("--settings") || args.includes("-s")) {
     await runSettingsMenu();
@@ -320,6 +377,7 @@ ${chalk.bold(t("help.usage"))}
   commai -e, --emoji        ${t("help.emoji")}
   commai --lang <lang>      ${t("help.lang")}
   commai --push             ${t("help.push")}
+  commai --install-hook     Installation du Git Hook
   commai --config           ${t("help.config")}
   commai --settings         ${t("help.settings")}
   commai --help             ${t("help.help")}
@@ -351,7 +409,7 @@ ${chalk.bold(t("help.usage"))}
 
   // ── Get branch info ──
   const branch = await getCurrentBranch(git);
-  const branchScope = parseBranchScope(branch);
+  const { scope: branchScope, ticket } = parseBranchScope(branch);
 
   // ── Get diff ──
   const spinner = ora(t("git.analyzingDiff")).start();
@@ -432,6 +490,8 @@ ${chalk.bold(t("help.usage"))}
     commitMessage = await generateCommit(apiKey, diff, selectedMode, {
       branch,
       scope,
+      ticket,
+      rules: effectiveConfig.rules,
       language,
       onStream: (chunk) => {
         if (genSpinner.isSpinning) genSpinner.stop();
@@ -464,6 +524,21 @@ ${chalk.bold(t("help.usage"))}
     console.log(
       "\n" + messageBox(commitMessage, { title: t("chat.updatedMessage"), borderColor: "green" })
     );
+  }
+
+  // ── Hook mode final action ──
+  const hookIdx = args.indexOf("--hook");
+  if (hookIdx !== -1) {
+    const hookFile = args[hookIdx + 1];
+    if (hookFile) {
+      try {
+        writeFileSync(hookFile, commitMessage);
+        process.exit(0);
+      } catch (err) {
+        console.error(chalk.red("Error writing to hook file: " + err.message));
+        process.exit(1);
+      }
+    }
   }
 
   // ── Final action ──

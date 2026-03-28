@@ -61,6 +61,7 @@ commai -l           # 📝 Long : détaillé avec bullets
 commai -e           # 🎨 Emoji (gitmoji)
 commai --lang en    # 🌐 Forcer la langue (en, fr, es, de, etc.)
 commai --push       # Génère, committe ET push automatiquement
+commai --install-hook # Installe le hook Git pour automatiser commai
 commai --config     # Reconfigurer la clé API
 commai --help       # Aide
 ```
@@ -86,15 +87,15 @@ Le mode Chat vous permet de discuter avec Gemini pour affiner le message :
 ## Fonctionnalités
 
 - **Smart Diff** — Exclut automatiquement les lockfiles, fichiers minifiés et dossiers de build
-- **Détection de branche** — Utilise le nom de branche pour enrichir le contexte IA
-- **Scope automatique** — Détecte le scope du conventional commit depuis les fichiers modifiés
+- **Staging Interactif** — Choisissez précisément quels fichiers inclure si rien n'est stagé
+- **Détection de Branche & Tickets** — Extrait le scope et les numéros de tickets (JIRA, GitHub) depuis la branche
+- **Règles de Projet** — Support d'un champ `rules` dans le `.commairc` pour guider l'IA
+- **Git Hook** — S'intègre via `prepare-commit-msg` pour une expérience zéro-clic
+- **Résumé Visuel** — Affichage des fichiers avec icônes par extension
 - **Streaming** — Affiche le message en temps réel pendant la génération
 - **Retry intelligent** — Relance automatiquement en cas d'erreur réseau (3 tentatives)
-- **Timeout** — Timeout de 30s pour éviter les blocages
 - **Validation de clé** — Vérifie la clé API avant de la sauvegarder
 - **Config projet** — Fichier `.commairc` pour des conventions d'équipe
-- Stage automatiquement si besoin (`git add -A`)
-- Option de push après commit
 - Copie dans le presse-papier
 - Clé API sauvegardée localement (`~/.commai.json`)
 

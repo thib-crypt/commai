@@ -142,30 +142,33 @@ export async function getCurrentBranch(git) {
 }
 
 /**
- * Try to extract a scope from the branch name.
- * e.g. "feat/auth-login" → "auth"
- * e.g. "fix/PROJ-123-api-error" → "api"
+ * Try to extract a scope and ticket from the branch name.
+ * e.g. "feat/auth-login" → { scope: "auth", ticket: null }
+ * e.g. "fix/PROJ-123-api-error" → { scope: "api", ticket: "PROJ-123" }
  */
 export function parseBranchScope(branchName) {
-  if (!branchName) return null;
+  if (!branchName) return { scope: null, ticket: null };
 
-  // Remove common prefixes: feat/, fix/, chore/, etc.
-  const withoutPrefix = branchName.replace(
-    /^(feat|fix|chore|docs|refactor|test|style|build|ci|perf|revert|hotfix|release)\//i,
+  // Detect ticket pattern (JIRA-123 or #123)
+  const ticketMatch = branchName.match(/([A-Z]+-\d+|#\d+)/);
+  const ticket = ticketMatch ? ticketMatch[0] : null;
+
+  // Remove common prefixes
+  let clean = branchName.replace(
+    /^(feat|fix|chore|docs|refactor|test|style|build|ci|perf|revert|hotfix|release|feature)\//i,
     ""
   );
 
-  // Remove ticket patterns: JIRA-123-, PROJ-456-, #789-
-  const withoutTicket = withoutPrefix.replace(
-    /^[A-Z]+-\d+-|^#\d+-/,
-    ""
-  );
+  // Remove ticket from the string for scope detection
+  if (ticket) {
+    clean = clean.replace(ticket, "").replace(/^[-_]+|[-_]+$/g, "");
+  }
 
   // Take the first meaningful word as scope
-  const parts = withoutTicket.split(/[-_/]/);
-  const scope = parts[0]?.toLowerCase();
+  const parts = clean.split(/[-_/]/).filter((p) => p.length > 1);
+  const scope = parts[0]?.toLowerCase() || null;
 
-  return scope && scope.length > 1 ? scope : null;
+  return { scope, ticket };
 }
 
 // ─── Auto scope from files ───────────────────────────────────────────────────
@@ -223,4 +226,12 @@ export function detectScopeFromFiles(files) {
   }
 
   return null;
+}
+
+/**
+ * Stage a specific list of files.
+ */
+export async function stageFiles(git, files) {
+  if (!files || files.length === 0) return;
+  await git.add(files);
 }

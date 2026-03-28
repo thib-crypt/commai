@@ -43,7 +43,8 @@
     "updatedMessage": "Message mis à jour"
   },
   "git": {
-    "noStaged": "Rien n'est stagé. Veux-tu faire git add -A avant de committer ?",
+    "noStaged": "Aucun fichier n'est stagé. Lesquels souhaitez-vous ajouter ?",
+    "addAll": "Tout ajouter",
     "stagedAll": "✅ Tous les fichiers stagés.",
     "generating": "Génération du message...",
     "committing": "Commit en cours...",
@@ -58,7 +59,9 @@
     "diffError": "Impossible de lire le diff : ",
     "noChanges": "Aucun changement détecté (staged ou non stagé).",
     "continueAnyway": "Continuer quand même ?",
-    "diffSuccess": "Diff récupéré"
+    "diffSuccess": "Diff récupéré",
+    "hookInstalled": "✅ Git hook installé avec succès dans .git/hooks/prepare-commit-msg",
+    "hookError": "❌ Erreur lors de l'installation du hook : "
   },
   "actions": {
     "copied": "✅ Copié dans le presse-papier !",

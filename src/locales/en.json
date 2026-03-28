@@ -43,7 +43,8 @@
     "updatedMessage": "Updated message"
   },
   "git": {
-    "noStaged": "Nothing is staged. Do you want to git add -A before committing?",
+    "noStaged": "No files are staged. Which ones do you want to add?",
+    "addAll": "Add all",
     "stagedAll": "✅ All files staged.",
     "generating": "Generating message...",
     "committing": "Committing...",
@@ -58,7 +59,9 @@
     "diffError": "Cannot read diff: ",
     "noChanges": "No changes detected (staged or unstaged).",
     "continueAnyway": "Continue anyway?",
-    "diffSuccess": "Diff retrieved"
+    "diffSuccess": "Diff retrieved",
+    "hookInstalled": "✅ Git hook successfully installed in .git/hooks/prepare-commit-msg",
+    "hookError": "❌ Error during hook installation: "
   },
   "actions": {
     "copied": "✅ Copied to clipboard!",

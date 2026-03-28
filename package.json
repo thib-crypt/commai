@@ -4,12 +4,18 @@
   "description": "AI-powered git commit message generator using Gemini",
   "main": "src/cli.js",
   "bin": {
-    "commai": "./bin/commai.js"
+    "commai": "bin/commai.js"
   },
   "type": "module",
   "engines": {
     "node": ">=18"
   },
+  "files": [
+    "bin",
+    "src",
+    "index.js"
+  ],
+  "author": "thib-crypt",
   "keywords": [
     "git",
     "commit",

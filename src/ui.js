@@ -82,16 +82,33 @@ export function printChatHeader(currentMessage, aiResponse) {
 }
 
 // ─── File status display ──────────────────────────────────────────────────────
+const EXTENSION_ICONS = {
+  ".js": "⚛️", ".ts": "🔷", ".jsx": "⚛️", ".tsx": "🔷",
+  ".py": "🐍", ".rb": "💎", ".go": "🐹", ".rs": "🦀",
+  ".php": "🐘", ".java": "☕", ".swift": "🍎", ".kt": "🎯",
+  ".css": "🎨", ".scss": "🎨", ".html": "🌐", ".vue": "💚", ".svelte": "🧡",
+  ".json": "📄", ".yml": "⚙️", ".yaml": "⚙️", ".md": "📝", ".sql": "🗄️",
+  ".env": "🔑", "gitignore": "🚫", "dockerfile": "🐳", ".lock": "🔒",
+};
+
+function getFileIcon(filename) {
+  const ext = filename.includes(".") ? filename.slice(filename.lastIndexOf(".")).toLowerCase() : "";
+  if (filename.includes("gitignore")) return EXTENSION_ICONS["gitignore"];
+  if (filename.toLowerCase().includes("dockerfile")) return EXTENSION_ICONS["dockerfile"];
+  return EXTENSION_ICONS[ext] || "📄";
+}
 
 export function printFileStatus(staged, unstaged) {
   if (staged.length > 0) {
+    const formatted = staged.map(f => `${getFileIcon(f)} ${f}`).join(", ");
     console.log(
-      chalk.green(`  ${t("ui.staged")} `) + chalk.white(staged.join(", "))
+      chalk.green(`  ${t("ui.staged")} `) + chalk.white(formatted)
     );
   }
   if (unstaged.length > 0) {
+    const formatted = unstaged.map(f => `${getFileIcon(f)} ${f}`).join(", ");
     console.log(
-      chalk.yellow(`  ${t("ui.unstaged")} `) + chalk.dim(unstaged.join(", "))
+      chalk.yellow(`  ${t("ui.unstaged")} `) + chalk.dim(formatted)
     );
   }
   console.log();

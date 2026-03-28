@@ -1,0 +1,131 @@
+{
+  "app": {
+    "name": "commai",
+    "description": "Générateur de messages de commit IA",
+    "tagline": " — Générateur de messages de commit IA",
+    "poweredBy": "proposé par Gemini"
+  },
+  "setup": {
+    "noApiKey": "⚠️  Aucune clé API Gemini trouvée.",
+    "getApiKey": "Obtenez une clé gratuite sur : https://aistudio.google.com/apikey",
+    "promptApiKey": "Collez votre clé API Gemini :",
+    "apiKeyRequired": "Clé requise",
+    "promptDefaultLanguage": "Langue par défaut des messages de commit :",
+    "verifyingKey": "Vérification de la clé...",
+    "invalidKey": "Clé API invalide. Vérifiez votre clé et réessayez.",
+    "validKey": "Clé API valide",
+    "configSaved": "Configuration sauvegardée dans ~/.commai.json (Langue: {language})"
+  },
+  "ui": {
+    "currentMessage": "Message actuel :",
+    "aiResponse": "Gemini :",
+    "staged": "Stagés    :",
+    "unstaged": "Non stagés:",
+    "context": "Contexte  :",
+    "scope": "scope",
+    "language": "langue",
+    "stats": " (+{insertions} -{deletions} dans {totalFiles} fichiers)"
+  },
+  "chat": {
+    "header": "Chat avec Gemini",
+    "promptAction": "Que faire ?",
+    "useMessage": "✅ Utiliser ce message",
+    "askRefinement": "💬 Demander une modification",
+    "regenerate": "🔄 Régénérer complètement",
+    "editManually": "✏️  Éditer manuellement",
+    "promptEdit": "Éditez le message :",
+    "regenerating": "Régénération...",
+    "regenerated": "Message régénéré",
+    "newMessage": "Nouveau message",
+    "userPrefix": "Toi →",
+    "aiThinking": "Gemini réfléchit...",
+    "error": "Erreur Gemini : ",
+    "updatedMessage": "Message mis à jour"
+  },
+  "git": {
+    "noStaged": "Rien n'est stagé. Veux-tu faire git add -A avant de committer ?",
+    "stagedAll": "✅ Tous les fichiers stagés.",
+    "generating": "Génération du message...",
+    "committing": "Commit en cours...",
+    "commitSuccess": "✅ Commit effectué : ",
+    "commitError": "Erreur commit : ",
+    "pushing": "Push...",
+    "pushSuccess": "✅ Push effectué !",
+    "pushError": "Erreur push : ",
+    "wantPush": "Push maintenant ?",
+    "notRepo": "❌ Ce dossier n'est pas un dépôt Git.",
+    "analyzingDiff": "Analyse du diff Git...",
+    "diffError": "Impossible de lire le diff : ",
+    "noChanges": "Aucun changement détecté (staged ou non stagé).",
+    "continueAnyway": "Continuer quand même ?",
+    "diffSuccess": "Diff récupéré"
+  },
+  "actions": {
+    "copied": "✅ Copié dans le presse-papier !",
+    "copyFailed": "Impossible de copier. Voici le message :",
+    "promptAction": "Que faire avec ce message ?",
+    "commitNow": "✅ Committer maintenant",
+    "refineAi": "💬 Affiner avec l'IA",
+    "copyClipboard": "📋 Copier dans le presse-papier",
+    "cancel": "❌ Annuler",
+    "cancelled": "Annulé.",
+    "confirmCommit": "Committer ce message ?",
+    "commit": "✅ Committer",
+    "copy": "📋 Copier",
+    "settings": "⚙️  Réglages"
+  },
+  "config": {
+    "promptNewKey": "Nouvelle clé API Gemini :",
+    "promptDefaultLang": "Langue par défaut :",
+    "verifying": "Vérification...",
+    "keyValid": "Clé valide",
+    "configUpdated": "✅ Configuration mise à jour (Langue: {language})"
+  },
+  "help": {
+    "usage": "Usage:",
+    "interactive": "Lancer en mode interactif",
+    "quick": "Mode rapide (une ligne)",
+    "short": "Mode court",
+    "long": "Mode long et détaillé",
+    "emoji": "Mode gitmoji",
+    "lang": "Forcer la langue (en, fr, es, de, etc.)",
+    "push": "Générer, committer et push automatiquement",
+    "config": "Reconfigurer la clé API",
+    "settings": "Accéder aux réglages interactifs",
+    "help": "Afficher cette aide"
+  },
+  "modes": {
+    "quick": {
+      "name": "⚡ Rapide       — Une ligne, concise"
+    },
+    "short": {
+      "name": "✏️  Court        — Titre + contexte bref"
+    },
+    "standard": {
+      "name": "📋 Standard     — Titre + description"
+    },
+    "long": {
+      "name": "📝 Long         — Détaillé avec bullets"
+    },
+    "emoji": {
+      "name": "🎨 Emoji        — Avec gitmoji"
+    },
+    "chat": {
+      "name": "💬 Chat         — Générer puis affiner avec l'IA"
+    },
+    "promptMode": "Quel style de message ?"
+  },
+  "settings": {
+    "title": "Réglages de commai",
+    "back": "⬅️  Retour",
+    "exit": "🚪 Quitter les réglages",
+    "apiKey": "Clé API Gemini",
+    "interfaceLang": "Langue de l'interface",
+    "commitLang": "Langue des messages de commit",
+    "defaultMode": "Style de commit par défaut",
+    "excludeFiles": "Fichiers à exclure (regex)",
+    "autoPush": "Auto-push après commit",
+    "current": "Actuel : ",
+    "updated": "Mis à jour"
+  }
+}

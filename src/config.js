@@ -23,6 +23,12 @@ export function saveConfig(config) {
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
 }
 
+export function updateConfig(key, value) {
+  const config = loadConfig();
+  config[key] = value;
+  saveConfig(config);
+}
+
 // ─── API Key ──────────────────────────────────────────────────────────────────
 
 export function getApiKey() {

@@ -18,14 +18,16 @@ import {
   printChatHeader, printFileStatus, printBranchInfo,
   colors,
 } from "./ui.js";
+import { initI18n, t, setInterfaceLanguage, getInterfaceLanguage } from "./i18n.js";
+import { runSettingsMenu } from "./settings.js";
 
 // ─── Setup API key ────────────────────────────────────────────────────────────
 
 async function setupApiKey() {
   console.log(
-    chalk.yellow("⚠️  Aucune clé API Gemini trouvée.\n") +
+    chalk.yellow(`${t("setup.noApiKey")}\n`) +
       chalk.gray(
-        "  Obtenez une clé gratuite sur : https://aistudio.google.com/apikey\n"
+        `  ${t("setup.getApiKey")}\n`
       )
   );
 
@@ -33,9 +35,9 @@ async function setupApiKey() {
     {
       type: "password",
       name: "apiKey",
-      message: "Collez votre clé API Gemini :",
+      message: t("setup.promptApiKey"),
       mask: "•",
-      validate: (v) => (v.trim().length > 0 ? true : "Clé requise"),
+      validate: (v) => (v.trim().length > 0 ? true : t("setup.apiKeyRequired")),
     },
   ]);
 
@@ -45,7 +47,7 @@ async function setupApiKey() {
     {
       type: "list",
       name: "language",
-      message: "Langue par défaut des messages de commit :",
+      message: t("setup.promptDefaultLanguage"),
       choices: [
         { name: "English", value: "en" },
         { name: "Français", value: "fr" },
@@ -57,19 +59,25 @@ async function setupApiKey() {
   ]);
 
   // Validate the key before saving
-  const spinner = ora("Vérification de la clé...").start();
+  const spinner = ora(t("setup.verifyingKey")).start();
   const valid = await validateApiKey(key);
   if (!valid) {
-    spinner.fail("Clé API invalide. Vérifiez votre clé et réessayez.");
+    spinner.fail(t("setup.invalidKey"));
     process.exit(1);
   }
-  spinner.succeed("Clé API valide");
+  spinner.succeed(t("setup.validKey"));
 
   const config = loadConfig();
   config.geminiApiKey = key;
   config.language = language;
+  // Linked by default
+  config.interfaceLanguage = language;
   saveConfig(config);
-  console.log(chalk.green(`✅ Configuration sauvegardée dans ~/.commai.json (Langue: ${language})\n`));
+
+  // Re-init i18n with new config
+  initI18n();
+
+  console.log(chalk.green(`✅ ${t("setup.configSaved", { language })}\n`));
   return key;
 }
 
@@ -92,12 +100,12 @@ async function chatMode(apiKey, diff, initialMessage) {
       {
         type: "list",
         name: "action",
-        message: "Que faire ?",
+        message: t("chat.promptAction"),
         choices: [
-          { name: "✅ Utiliser ce message", value: "use" },
-          { name: "💬 Demander une modification", value: "chat" },
-          { name: "🔄 Régénérer complètement", value: "regen" },
-          { name: "✏️  Éditer manuellement", value: "edit" },
+          { name: t("chat.useMessage"), value: "use" },
+          { name: t("chat.askRefinement"), value: "chat" },
+          { name: t("chat.regenerate"), value: "regen" },
+          { name: t("chat.editManually"), value: "edit" },
         ],
       },
     ]);
@@ -109,7 +117,7 @@ async function chatMode(apiKey, diff, initialMessage) {
         {
           type: "editor",
           name: "edited",
-          message: "Éditez le message :",
+          message: t("chat.promptEdit"),
           default: currentMessage,
         },
       ]);
@@ -117,10 +125,10 @@ async function chatMode(apiKey, diff, initialMessage) {
     }
 
     if (action === "regen") {
-      const spinner = ora("Régénération...").start();
+      const spinner = ora(t("chat.regenerating")).start();
       currentMessage = await generateCommit(apiKey, diff, "standard");
-      spinner.succeed("Message régénéré");
-      console.log(messageBox(currentMessage, { title: "Nouveau message" }));
+      spinner.succeed(t("chat.regenerated"));
+      console.log(messageBox(currentMessage, { title: t("chat.newMessage") }));
       continue;
     }
 
@@ -129,14 +137,14 @@ async function chatMode(apiKey, diff, initialMessage) {
         {
           type: "input",
           name: "userMsg",
-          message: chalk.cyan("Toi →"),
+          message: chalk.cyan(`${t("chat.userPrefix")} `),
           prefix: "",
         },
       ]);
 
       if (!userMsg.trim()) continue;
 
-      const spinner = ora("Gemini réfléchit...").start();
+      const spinner = ora(t("chat.aiThinking")).start();
       try {
         const response = await session.send(userMsg);
         spinner.stop();
@@ -149,18 +157,18 @@ async function chatMode(apiKey, diff, initialMessage) {
 
         console.log(
           "\n" +
-            chalk.hex(colors.success).bold("Gemini →") +
+            chalk.hex(colors.success).bold(`${t("ui.aiResponse")} `) +
             "\n" +
             chalk.gray(response)
         );
 
         if (currentMessage !== initialMessage) {
           console.log(
-            "\n" + compactBox(currentMessage, { title: "Message mis à jour" })
+            "\n" + compactBox(currentMessage, { title: t("chat.updatedMessage") })
           );
         }
       } catch (err) {
-        spinner.fail("Erreur Gemini : " + err.message);
+        spinner.fail(t("chat.error") + err.message);
       }
     }
   }
@@ -176,53 +184,53 @@ async function doCommit(git, commitMessage, autoPush) {
       {
         type: "confirm",
         name: "stageAll",
-        message: "Rien n'est stagé. Veux-tu faire git add -A avant de committer ?",
+        message: t("git.noStaged"),
         default: true,
       },
     ]);
     if (stageAll) {
       await git.add("-A");
-      console.log(chalk.green("✅ Tous les fichiers stagés."));
+      console.log(chalk.green(t("git.stagedAll")));
     }
   }
 
-  const commitSpinner = ora("Commit en cours...").start();
+  const commitSpinner = ora(t("git.committing")).start();
   try {
     await git.commit(commitMessage);
     commitSpinner.succeed(
-      chalk.green("✅ Commit effectué : ") +
+      chalk.green(t("git.commitSuccess")) +
         chalk.bold(commitMessage.split("\n")[0])
     );
   } catch (err) {
-    commitSpinner.fail("Erreur commit : " + err.message);
+    commitSpinner.fail(t("git.commitError") + err.message);
     process.exit(1);
   }
 
   // Push
   if (autoPush) {
-    const pushSpinner = ora("Push...").start();
+    const pushSpinner = ora(t("git.pushing")).start();
     try {
       await git.push();
-      pushSpinner.succeed(chalk.green("✅ Push effectué !"));
+      pushSpinner.succeed(chalk.green(t("git.pushSuccess")));
     } catch (err) {
-      pushSpinner.fail("Erreur push : " + err.message);
+      pushSpinner.fail(t("git.pushError") + err.message);
     }
   } else {
     const { wantPush } = await inquirer.prompt([
       {
         type: "confirm",
         name: "wantPush",
-        message: "Push maintenant ?",
+        message: t("git.wantPush"),
         default: false,
       },
     ]);
     if (wantPush) {
-      const pushSpinner = ora("Push...").start();
+      const pushSpinner = ora(t("git.pushing")).start();
       try {
         await git.push();
-        pushSpinner.succeed(chalk.green("✅ Push effectué !"));
+        pushSpinner.succeed(chalk.green(t("git.pushSuccess")));
       } catch (err) {
-        pushSpinner.fail("Erreur push : " + err.message);
+        pushSpinner.fail(t("git.pushError") + err.message);
       }
     }
   }
@@ -233,9 +241,9 @@ async function doCommit(git, commitMessage, autoPush) {
 function handleCopy(commitMessage) {
   const ok = copyToClipboard(commitMessage);
   if (ok) {
-    console.log(chalk.green("✅ Copié dans le presse-papier !"));
+    console.log(chalk.green(t("actions.copied")));
   } else {
-    console.log(chalk.yellow("Impossible de copier. Voici le message :"));
+    console.log(chalk.yellow(t("actions.copyFailed")));
     console.log(commitMessage);
   }
 }
@@ -245,15 +253,21 @@ function handleCopy(commitMessage) {
 export async function main() {
   const args = process.argv.slice(2);
 
+  // ── Determine interface language early ──
+  const langIdx = args.findIndex(a => a === "--lang" || a === "-lg");
+  const cliLang = (langIdx !== -1 && args[langIdx + 1]) ? args[langIdx + 1] : null;
+
+  initI18n(cliLang);
+
   // ── Handle --config ──
   if (args.includes("--config") || args.includes("-c")) {
     const { apiKey } = await inquirer.prompt([
       {
         type: "password",
         name: "apiKey",
-        message: "Nouvelle clé API Gemini :",
+        message: t("config.promptNewKey"),
         mask: "•",
-        validate: (v) => (v.trim().length > 0 ? true : "Clé requise"),
+        validate: (v) => (v.trim().length > 0 ? true : t("setup.apiKeyRequired")),
       },
     ]);
     const config = loadConfig();
@@ -261,7 +275,7 @@ export async function main() {
       {
         type: "list",
         name: "language",
-        message: "Langue par défaut :",
+        message: t("config.promptDefaultLang"),
         choices: [
           { name: "English", value: "en" },
           { name: "Français", value: "fr" },
@@ -272,46 +286,54 @@ export async function main() {
       },
     ]);
 
-    const spinner = ora("Vérification...").start();
-    const valid = await validateApiKey(key);
+    const spinner = ora(t("config.verifying")).start();
+    const valid = await validateApiKey(apiKey);
     if (!valid) {
-      spinner.fail("Clé API invalide.");
+      spinner.fail(t("setup.invalidKey"));
       process.exit(1);
     }
-    spinner.succeed("Clé valide");
+    spinner.succeed(t("config.keyValid"));
 
-    config.geminiApiKey = key;
+    config.geminiApiKey = apiKey;
     config.language = language;
     saveConfig(config);
-    console.log(chalk.green(`✅ Configuration mise à jour (Langue: ${language})`));
+    console.log(chalk.green(t("config.configUpdated", { language })));
+    process.exit(0);
+  }
+
+  // ── Handle --settings ──
+  if (args.includes("--settings") || args.includes("-s")) {
+    await runSettingsMenu();
     process.exit(0);
   }
 
   // ── Handle --help ──
   if (args.includes("--help") || args.includes("-h")) {
     console.log(`
-${chalk.bold.hex(colors.primary)("commai")} — Générateur de messages de commit IA
+${chalk.bold.hex(colors.primary)(t("app.name"))}${t("app.tagline")}
 
-${chalk.bold("Usage:")}
-  commai                    Lancer en mode interactif
-  commai -q, --quick        Mode rapide (une ligne)
-  commai -s, --short        Mode court
-  commai -l, --long         Mode long et détaillé
-  commai -e, --emoji        Mode gitmoji
-  commai --lang <lang>      Forcer la langue (en, fr, es, de, etc.)
-  commai --push             Générer, committer et push automatiquement
-  commai --config           Reconfigurer la clé API
-  commai --help             Afficher cette aide
+${chalk.bold(t("help.usage"))}
+  commai                    ${t("help.interactive")}
+  commai -q, --quick        ${t("help.quick")}
+  commai -s, --short        ${t("help.short")}
+  commai -l, --long         ${t("help.long")}
+  commai -e, --emoji        ${t("help.emoji")}
+  commai --lang <lang>      ${t("help.lang")}
+  commai --push             ${t("help.push")}
+  commai --config           ${t("help.config")}
+  commai --settings         ${t("help.settings")}
+  commai --help             ${t("help.help")}
 `);
     process.exit(0);
   }
 
   printBanner();
+  // Language already initialized
 
   // ── Check git repo ──
   const git = createGit();
   if (!(await isGitRepo(git))) {
-    console.error(chalk.red("❌ Ce dossier n'est pas un dépôt Git."));
+    console.error(chalk.red(t("git.notRepo")));
     process.exit(1);
   }
 
@@ -325,18 +347,14 @@ ${chalk.bold("Usage:")}
   }
 
   // ── Determine language (Priority: Flag > Config > Default) ──
-  let language = effectiveConfig.language || "en";
-  const langIdx = args.findIndex(a => a === "--lang" || a === "-lg");
-  if (langIdx !== -1 && args[langIdx + 1]) {
-    language = args[langIdx + 1];
-  }
+  let language = cliLang || effectiveConfig.language || "en";
 
   // ── Get branch info ──
   const branch = await getCurrentBranch(git);
   const branchScope = parseBranchScope(branch);
 
   // ── Get diff ──
-  const spinner = ora("Analyse du diff Git...").start();
+  const spinner = ora(t("git.analyzingDiff")).start();
   let diff, diffStats;
   try {
     const excludePatterns = (effectiveConfig.excludeFiles || []).map(
@@ -346,17 +364,17 @@ ${chalk.bold("Usage:")}
     diff = result.diff;
     diffStats = result.stats;
   } catch (err) {
-    spinner.fail("Impossible de lire le diff : " + err.message);
+    spinner.fail(t("git.diffError") + err.message);
     process.exit(1);
   }
 
   if (!diff.trim()) {
-    spinner.warn(chalk.yellow("Aucun changement détecté (staged ou non stagé)."));
+    spinner.warn(chalk.yellow(t("git.noChanges")));
     const { continueAnyway } = await inquirer.prompt([
       {
         type: "confirm",
         name: "continueAnyway",
-        message: "Continuer quand même ?",
+        message: t("git.continueAnyway"),
         default: false,
       },
     ]);
@@ -364,9 +382,9 @@ ${chalk.bold("Usage:")}
     diff = "No diff available — generate a generic commit message.";
   } else {
     const statsInfo = diffStats
-      ? chalk.dim(` (+${diffStats.insertions} -${diffStats.deletions} in ${diffStats.totalFiles} files)`)
+      ? chalk.dim(t("ui.stats", { ...diffStats }))
       : chalk.dim(` (${diff.length} chars)`);
-    spinner.succeed(chalk.green("Diff récupéré") + statsInfo);
+    spinner.succeed(chalk.green(t("git.diffSuccess")) + statsInfo);
   }
 
   // ── Show file status ──
@@ -395,8 +413,8 @@ ${chalk.bold("Usage:")}
       {
         type: "list",
         name: "mode",
-        message: "Quel style de message ?",
-        choices: MODES,
+        message: t("modes.promptMode"),
+        choices: MODES.map(m => ({ name: m.name(), value: m.value })),
         pageSize: MODES.length,
       },
     ]);
@@ -408,7 +426,7 @@ ${chalk.bold("Usage:")}
   const scope = branchScope || fileScope;
 
   // ── Generate commit message ──
-  const genSpinner = ora("Génération du message...").start();
+  const genSpinner = ora(t("git.generating")).start();
   let commitMessage;
   try {
     commitMessage = await generateCommit(apiKey, diff, selectedMode, {
@@ -423,28 +441,28 @@ ${chalk.bold("Usage:")}
     // Clear the streamed output and show the clean version
     if (!genSpinner.isSpinning) {
       process.stdout.write("\n");
-      console.log(chalk.green("✓ ") + chalk.green("Message généré"));
+      console.log(chalk.green("✓ ") + chalk.green(t("git.diffSuccess")));
     } else {
-      genSpinner.succeed(chalk.green("Message généré"));
+      genSpinner.succeed(chalk.green(t("git.diffSuccess")));
     }
   } catch (err) {
-    genSpinner.fail("Erreur API Gemini : " + err.message);
+    genSpinner.fail(t("chat.error") + err.message);
     if (err.message.includes("API_KEY") || err.message.includes("401")) {
       console.log(
-        chalk.yellow('Relancez "commai --config" pour mettre à jour votre clé.')
+        chalk.yellow(t("git.diffError") + ' "commai --config"')
       );
     }
     process.exit(1);
   }
 
   // ── Display generated message ──
-  console.log("\n" + messageBox(commitMessage, { title: "Message généré" }));
+  console.log("\n" + messageBox(commitMessage, { title: t("git.diffSuccess") }));
 
   // ── Chat mode auto-entry ──
   if (selectedMode === "chat") {
     commitMessage = await chatMode(apiKey, diff, commitMessage);
     console.log(
-      "\n" + messageBox(commitMessage, { title: "Message final", borderColor: "green" })
+      "\n" + messageBox(commitMessage, { title: t("chat.updatedMessage"), borderColor: "green" })
     );
   }
 
@@ -455,22 +473,30 @@ ${chalk.bold("Usage:")}
     {
       type: "list",
       name: "action",
-      message: "Que faire avec ce message ?",
+      message: t("actions.promptAction"),
       choices: [
-        { name: "✅ Committer maintenant", value: "commit" },
+        { name: t("actions.commitNow"), value: "commit" },
         ...(selectedMode !== "chat"
-          ? [{ name: "💬 Affiner avec l'IA", value: "chat" }]
+          ? [{ name: t("actions.refineAi"), value: "chat" }]
           : []),
-        { name: "📋 Copier dans le presse-papier", value: "copy" },
-        { name: "✏️  Éditer manuellement", value: "edit" },
-        { name: "🔄 Régénérer", value: "regen" },
-        { name: "❌ Annuler", value: "cancel" },
+        { name: t("actions.copyClipboard"), value: "copy" },
+        { name: t("actions.editManually"), value: "edit" },
+        { name: t("chat.regenerate"), value: "regen" },
+        { name: t("actions.settings"), value: "settings" },
+        { name: t("actions.cancel"), value: "cancel" },
       ],
     },
   ]);
 
   if (action === "cancel") {
-    console.log(chalk.dim("Annulé."));
+    console.log(chalk.dim(t("actions.cancelled")));
+    process.exit(0);
+  }
+
+  if (action === "settings") {
+    await runSettingsMenu();
+    // After settings, we might want to resume or exit? 
+    // For now, let's just exit to be safe as settings might have changed lang.
     process.exit(0);
   }
 
@@ -484,7 +510,7 @@ ${chalk.bold("Usage:")}
       {
         type: "editor",
         name: "edited",
-        message: "Éditez le message :",
+        message: t("chat.promptEdit"),
         default: commitMessage,
       },
     ]);
@@ -494,7 +520,7 @@ ${chalk.bold("Usage:")}
   if (action === "chat") {
     commitMessage = await chatMode(apiKey, diff, commitMessage);
     console.log(
-      "\n" + messageBox(commitMessage, { title: "Message final", borderColor: "green" })
+      "\n" + messageBox(commitMessage, { title: t("chat.updatedMessage"), borderColor: "green" })
     );
 
     // Ask again after chat
@@ -502,17 +528,17 @@ ${chalk.bold("Usage:")}
       {
         type: "list",
         name: "finalAction",
-        message: "Committer ce message ?",
+        message: t("actions.confirmCommit"),
         choices: [
-          { name: "✅ Committer", value: "commit" },
-          { name: "📋 Copier", value: "copy" },
-          { name: "❌ Annuler", value: "cancel" },
+          { name: t("actions.commit"), value: "commit" },
+          { name: t("actions.copy"), value: "copy" },
+          { name: t("actions.cancel"), value: "cancel" },
         ],
       },
     ]);
 
     if (finalAction === "cancel") {
-      console.log(chalk.dim("Annulé."));
+      console.log(chalk.dim(t("actions.cancelled")));
       process.exit(0);
     }
     if (finalAction === "copy") {
@@ -522,14 +548,14 @@ ${chalk.bold("Usage:")}
   }
 
   if (action === "regen") {
-    const regenSpinner = ora("Régénération...").start();
+    const regenSpinner = ora(t("chat.regenerating")).start();
     commitMessage = await generateCommit(apiKey, diff, selectedMode, {
       branch,
       scope,
       language,
     });
-    regenSpinner.succeed("Message régénéré");
-    console.log("\n" + messageBox(commitMessage, { title: "Nouveau message" }));
+    regenSpinner.succeed(t("chat.regenerated"));
+    console.log("\n" + messageBox(commitMessage, { title: t("chat.newMessage") }));
   }
 
   // ── Commit ──

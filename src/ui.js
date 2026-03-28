@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import boxen from "boxen";
+import { t } from "./i18n.js";
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
 
@@ -16,9 +17,9 @@ export const colors = {
 export function printBanner() {
   console.log(
     boxen(
-      chalk.bold.hex(colors.primary)("commai") +
-        chalk.gray(" — AI commit generator") +
-        chalk.dim("\n  powered by Gemini"),
+      chalk.bold.hex(colors.primary)(t("app.name")) +
+        chalk.gray(t("app.tagline")) +
+        chalk.dim(`\n  ${t("app.poweredBy")}`),
       {
         padding: { top: 0, bottom: 0, left: 1, right: 1 },
         borderStyle: "round",
@@ -56,11 +57,11 @@ export function compactBox(content, { title = "Message", borderColor = "magenta"
 export function printChatHeader(currentMessage, aiResponse) {
   const border = chalk.hex(colors.primary);
 
-  console.log("\n" + border.bold("┌─ Chat avec Gemini ─────────────────────────────────────"));
+  console.log("\n" + border.bold(`┌─ ${t("chat.header")} ─────────────────────────────────────`));
   console.log(border("│"));
   console.log(
     border("│ ") +
-      chalk.bold("Message actuel :") +
+      chalk.bold(t("ui.currentMessage")) +
       "\n" +
       currentMessage
         .split("\n")
@@ -70,7 +71,7 @@ export function printChatHeader(currentMessage, aiResponse) {
   console.log(border("│"));
   console.log(
     border("│ ") +
-      chalk.hex(colors.success).bold("Gemini :") +
+      chalk.hex(colors.success).bold(t("ui.aiResponse")) +
       "\n" +
       aiResponse
         .split("\n")
@@ -85,12 +86,12 @@ export function printChatHeader(currentMessage, aiResponse) {
 export function printFileStatus(staged, unstaged) {
   if (staged.length > 0) {
     console.log(
-      chalk.green("  Stagés    : ") + chalk.white(staged.join(", "))
+      chalk.green(`  ${t("ui.staged")} `) + chalk.white(staged.join(", "))
     );
   }
   if (unstaged.length > 0) {
     console.log(
-      chalk.yellow("  Non stagés: ") + chalk.dim(unstaged.join(", "))
+      chalk.yellow(`  ${t("ui.unstaged")} `) + chalk.dim(unstaged.join(", "))
     );
   }
   console.log();
@@ -99,12 +100,12 @@ export function printFileStatus(staged, unstaged) {
 // ─── Branch display ───────────────────────────────────────────────────────────
 
 export function printBranchInfo(branch, scope, language) {
-  let info = chalk.hex(colors.primary)("  Contexte  : ") + chalk.white(branch);
+  let info = chalk.hex(colors.primary)(`  ${t("ui.context")}  `) + chalk.white(branch);
   if (scope) {
-    info += chalk.dim(` (scope: `) + chalk.hex(colors.success)(scope) + chalk.dim(`)`);
+    info += chalk.dim(` (${t("ui.scope")}: `) + chalk.hex(colors.success)(scope) + chalk.dim(`)`);
   }
   if (language) {
-    info += chalk.dim(` | langue: `) + chalk.hex(colors.warn)(language);
+    info += chalk.dim(` | ${t("ui.language")}: `) + chalk.hex(colors.warn)(language);
   }
   console.log(info);
 }

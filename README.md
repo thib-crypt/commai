@@ -1,8 +1,101 @@
-# commai
+# commai 🤖
 
-> Générateur de messages de commit IA — propulsé par Gemini
+[🇬🇧 English](#-english) | [🇫🇷 Français](#-français)
 
-## Installation rapide
+---
+
+## 🇬🇧 English
+
+> ✨ AI-powered git commit generator — powered by Google Gemini
+
+### 🚀 Quick Install
+
+```bash
+# Clone or download the repository, then:
+cd commai
+npm install
+npm link          # Makes "commai" available globally
+```
+
+Alternatively, via an absolute path in your `.bashrc` / `.zshrc`:
+```bash
+alias commai="node /path/to/commai/bin/commai.js"
+```
+
+### ⚙️ Setup
+
+On first launch, `commai` will ask for your Gemini API key and preferred language.
+Get a free API key at [Google AI Studio](https://aistudio.google.com/apikey).
+
+The key and preferences are securely saved in `~/.commai.json`.
+
+Access the interactive settings menu anytime to adjust your config:
+```bash
+commai --settings
+```
+
+You can also provide the key via an environment variable:
+```bash
+export GEMINI_API_KEY=your_api_key
+```
+
+### 🛠 Usage
+
+```bash
+commai              # Interactive mode — choose your style
+commai -q           # ⚡ Quick: One line (conventional commit max 72 chars)
+commai -s           # ✏️  Short: Title + brief context
+commai -l           # 📝 Long: Title + description + bullet points
+commai -e           # 🎨 Emoji: Gitmoji style
+commai --lang <lg>  # 🌐 Force language (en, fr, es, de)
+commai --push       # Generate, commit, AND push automatically
+commai --install-hook # Install Git hook for a zero-click experience
+commai --guide      # Launch the interactive onboarding tutorial
+commai --settings   # Open interactive settings menu
+commai --help       # Display help
+```
+
+### ✨ Features
+
+- **Interactive Staging:** If nothing is staged, commai lets you interactively select the unstaged files you want to include in the commit.
+- **Smart Diffing:** Automatically excludes lockfiles, minified files, and build folders from the context to save tokens and improve AI accuracy.
+- **Branch & Ticket Detection:** Extracts the scope and ticket numbers (e.g., Jira, GitHub) directly from your branch name.
+- **Multilingual Support:** Interface and commit message generation fully supported in English, French, Spanish, and German.
+- **Chat Mode:** Discuss with Gemini to refine, tweak, or completely rewrite the generated commit message before saving.
+- **Project Rules:** Use a local `.commairc` file to enforce specific team conventions or syntax.
+- **Git Hook Integration:** Run `commai --install-hook` and experience commai automatically whenever you type `git commit`.
+- **Live Streaming:** Watch Gemini write your commit message in real-time.
+
+### 📋 Project Configuration (`.commairc`)
+
+Create a `.commairc` file at the root of your repository to define project-specific conventions:
+
+```json
+{
+  "language": "en",
+  "defaultMode": "short",
+  "excludeFiles": ["*.lock", "dist/**"],
+  "rules": [
+    "Always use the imperative mood",
+    "Never mention variable names in the subject line"
+  ]
+}
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `language` | `string` | Commit message language (`en`, `fr`, `es`, `de`, etc.) |
+| `defaultMode` | `string` | Default commit style (`quick`, `short`, `standard`, `long`, `emoji`) |
+| `excludeFiles` | `string[]` | Array of regex patterns to exclude files from the diff |
+| `rules` | `string[]` | Custom instructions passed to the AI to format the commit |
+
+---
+
+## 🇫🇷 Français
+
+> ✨ Générateur de messages de commit IA — propulsé par Google Gemini
+
+### 🚀 Installation rapide
 
 ```bash
 # Cloner ou télécharger le repo, puis :
@@ -16,104 +109,69 @@ Ou via un chemin absolu dans votre `.bashrc` / `.zshrc` :
 alias commai="node /chemin/vers/commai/bin/commai.js"
 ```
 
-## Configuration
+### ⚙️ Configuration
 
-Au premier lancement, `commai` vous demande votre clé API Gemini.
-Obtenez-en une gratuitement sur [Google AI Studio](https://aistudio.google.com/apikey).
+Au premier lancement, `commai` vous demandera votre clé API Gemini et votre langue préférée.
+Obtenez une clé gratuitement sur [Google AI Studio](https://aistudio.google.com/apikey).
 
-La clé est sauvegardée dans `~/.commai.json`.
+La clé et vos préférences sont sauvegardées de manière sécurisée dans `~/.commai.json`.
 
-Pour la changer :
+Accédez au menu interactif des réglages à tout moment pour modifier votre configuration :
 ```bash
-commai --config
+commai --settings
 ```
 
-Ou via variable d'environnement :
+Vous pouvez aussi utiliser une variable d'environnement :
 ```bash
 export GEMINI_API_KEY=votre_clé
 ```
 
-### Configuration par projet (`.commairc`)
+### 🛠 Utilisation
 
-Créez un fichier `.commairc` à la racine de votre repo pour des conventions d'équipe :
+```bash
+commai              # Mode interactif — choisissez le style
+commai -q           # ⚡ Rapide : Une ligne (conventional commit)
+commai -s           # ✏️  Court : Titre + contexte bref
+commai -l           # 📝 Long : Titre + description + liste à puces
+commai -e           # 🎨 Emoji : Style gitmoji
+commai --lang <lg>  # 🌐 Forcer la langue (en, fr, es, de)
+commai --push       # Génère, committe ET push automatiquement
+commai --install-hook # Installe le hook Git pour exécuter commai via un simple git commit
+commai --guide      # Lancer le tutoriel d'accueil interactif
+commai --settings   # Ouvrir le menu des réglages
+commai --help       # Aide
+```
+
+### ✨ Fonctionnalités
+
+- **Staging Interactif :** Sélectionnez précisément quels fichiers non-stagés inclure si rien n'est encore stagé, directement depuis la CLI.
+- **Smart Diff :** Exclut automatiquement les lockfiles, les fichiers minifiés et les dossiers de build pour des résultats plus performants.
+- **Détection de Branche & Tickets :** Extrait automatiquement le scope et les numéros de tickets (JIRA, GitHub) depuis le nom de votre branche.
+- **Support Multilingue :** L'interface et la génération de commits sont supportées en Français, Anglais, Espagnol et Allemand.
+- **Mode Chat :** Discutez avec Gemini pour affiner, modifier ou réécrire le message généré avant validation.
+- **Règles par Projet :** Utilisez un fichier `.commairc` pour imposer des conventions d'équipe.
+- **Intégration Git Hook :** Lancez `commai --install-hook` pour que commai prenne le relai à chaque commande `git commit`.
+- **Streaming :** Affiche la génération de votre message par l'IA en temps réel.
+
+### 📋 Configuration par projet (`.commairc`)
+
+Créez un fichier `.commairc` à la racine de votre dépôt pour des conventions spécifiques à votre projet :
 
 ```json
 {
   "language": "fr",
   "defaultMode": "short",
-  "excludeFiles": ["*.lock", "dist/**"]
+  "excludeFiles": ["*.lock", "dist/**"],
+  "rules": [
+    "Toujours utiliser le présent de l'indicatif",
+    "Ne jamais mentionner le nom des variables dans le titre"
+  ]
 }
 ```
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `language` | `string` | Langue des messages (`en`, `fr`, etc.) |
+| `language` | `string` | Langue préférée des messages (`en`, `fr`, `es`, `de`, etc.) |
 | `defaultMode` | `string` | Mode par défaut (`quick`, `short`, `standard`, `long`, `emoji`) |
-| `excludeFiles` | `string[]` | Patterns de fichiers à exclure du diff |
-
-## Utilisation
-
-```bash
-commai              # Mode interactif — choisissez le style
-commai -q           # ⚡ Rapide : une ligne (conventionnal commit)
-commai -s           # ✏️  Court : titre + contexte bref
-commai -l           # 📝 Long : détaillé avec bullets
-commai -e           # 🎨 Emoji (gitmoji)
-commai --lang en    # 🌐 Forcer la langue (en, fr, es, de, etc.)
-commai --push       # Génère, committe ET push automatiquement
-commai --install-hook # Installe le hook Git pour automatiser commai
-commai --config     # Reconfigurer la clé API
-commai --guide      # Lancer le guide interactif (onboarding)
-commai --help       # Aide
-```
-
-## Styles disponibles
-
-| Mode | Flag | Description |
-|------|------|-------------|
-| ⚡ Rapide | `-q` | Une ligne, max 72 chars |
-| ✏️ Court | `-s` | Titre + 1-2 bullets |
-| 📋 Standard | _(défaut)_ | Titre + paragraphe |
-| 📝 Long | `-l` | Titre + description + bullets |
-| 🎨 Emoji | `-e` | Style gitmoji |
-| 💬 Chat | _(interactif)_ | Générer puis affiner avec l'IA |
-
-## Mode Chat
-
-Le mode Chat vous permet de discuter avec Gemini pour affiner le message :
-- Modifier le ton, la précision, ajouter du contexte
-- L'IA propose des améliorations et explique ses suggestions
-- Vous pouvez aussi éditer manuellement à tout moment
-
-## Fonctionnalités
-
-- **Smart Diff** — Exclut automatiquement les lockfiles, fichiers minifiés et dossiers de build
-- **Guide Interactif** — Tutoriel intégré pour découvrir l'outil (`commai --guide`)
-- **Staging Interactif** — Choisissez précisément quels fichiers inclure si rien n'est stagé
-- **Détection de Branche & Tickets** — Extrait le scope et les numéros de tickets (JIRA, GitHub) depuis la branche
-- **Règles de Projet** — Support d'un champ `rules` dans le `.commairc` pour guider l'IA
-- **Git Hook** — S'intègre via `prepare-commit-msg` pour une expérience zéro-clic
-- **Résumé Visuel** — Affichage des fichiers avec icônes par extension
-- **Streaming** — Affiche le message en temps réel pendant la génération
-- **Retry intelligent** — Relance automatiquement en cas d'erreur réseau (3 tentatives)
-- **Validation de clé** — Vérifie la clé API avant de la sauvegarder
-- **Config projet** — Fichier `.commairc` pour des conventions d'équipe
-- Copie dans le presse-papier
-- Clé API sauvegardée localement (`~/.commai.json`)
-
-## Architecture
-
-```
-commai/
-├── bin/commai.js       # Point d'entrée CLI
-├── src/
-│   ├── ai.js           # Génération IA (Gemini, retry, streaming)
-│   ├── cli.js          # Orchestration principale
-│   ├── clipboard.js    # Presse-papier cross-platform
-│   ├── config.js       # Configuration (global + projet)
-│   ├── git.js          # Opérations Git (smart diff, branche, scope)
-│   ├── modes.js        # Définitions des styles de commit
-│   └── ui.js           # Affichage (banner, boxes, couleurs)
-├── package.json
-└── README.md
-```
+| `excludeFiles` | `string[]` | Patterns regex de fichiers à exclure du diff |
+| `rules` | `string[]` | Instructions personnalisées passées à l'IA pour encadrer le résultat |

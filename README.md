@@ -63,6 +63,7 @@ commai --lang en    # 🌐 Forcer la langue (en, fr, es, de, etc.)
 commai --push       # Génère, committe ET push automatiquement
 commai --install-hook # Installe le hook Git pour automatiser commai
 commai --config     # Reconfigurer la clé API
+commai --guide      # Lancer le guide interactif (onboarding)
 commai --help       # Aide
 ```
 
@@ -87,6 +88,7 @@ Le mode Chat vous permet de discuter avec Gemini pour affiner le message :
 ## Fonctionnalités
 
 - **Smart Diff** — Exclut automatiquement les lockfiles, fichiers minifiés et dossiers de build
+- **Guide Interactif** — Tutoriel intégré pour découvrir l'outil (`commai --guide`)
 - **Staging Interactif** — Choisissez précisément quels fichiers inclure si rien n'est stagé
 - **Détection de Branche & Tickets** — Extrait le scope et les numéros de tickets (JIRA, GitHub) depuis la branche
 - **Règles de Projet** — Support d'un champ `rules` dans le `.commairc` pour guider l'IA

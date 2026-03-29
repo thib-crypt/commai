@@ -22,6 +22,7 @@ import {
 } from "./ui.js";
 import { initI18n, t, setInterfaceLanguage, getInterfaceLanguage } from "./i18n.js";
 import { runSettingsMenu } from "./settings.js";
+import { runOnboarding } from "./onboarding.js";
 
 async function installHook() {
   const git = createGit();
@@ -109,6 +110,19 @@ async function setupApiKey() {
   initI18n();
 
   console.log(chalk.green(`✅ ${t("setup.configSaved", { language })}\n`));
+
+  const { wantOnboarding } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "wantOnboarding",
+      message: t("onboarding.promptStart"),
+      default: true,
+    },
+  ]);
+  if (wantOnboarding) {
+    await runOnboarding();
+  }
+
   return key;
 }
 
@@ -364,6 +378,14 @@ export async function main() {
     process.exit(0);
   }
 
+  // ── Handle --guide ──
+  if (args.includes("--guide")) {
+    // Determine language (Priority: Flag > Config > Default)
+    initI18n(cliLang || loadConfig().language || "en");
+    await runOnboarding();
+    process.exit(0);
+  }
+
   // ── Handle --help ──
   if (args.includes("--help") || args.includes("-h")) {
     console.log(`
@@ -380,6 +402,7 @@ ${chalk.bold(t("help.usage"))}
   commai --install-hook     Installation du Git Hook
   commai --config           ${t("help.config")}
   commai --settings         ${t("help.settings")}
+  commai --guide            Lancer le guide interactif
   commai --help             ${t("help.help")}
 `);
     process.exit(0);

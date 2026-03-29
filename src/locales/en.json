@@ -130,5 +130,20 @@
     "autoPush": "Auto-push after commit",
     "current": "Current: ",
     "updated": "Updated"
+  },
+  "onboarding": {
+    "promptStart": "Would you like a quick interactive tour to discover commai?",
+    "slide1Title": "👋 Welcome to commai!",
+    "slide1Text": "commai is a terminal-based AI assistant that generates high-quality commit messages based on your code changes.\n\nIt analyzes your `git diff` and follows professional conventions (Conventional Commits, Gitmoji...).",
+    "slide2Title": "⚡ Commit Modes",
+    "slide2Text": "You can generate different message styles using flags:\n\n- `commai -q` : Quick (1 line)\n- `commai -s` : Short (Title + some context)\n- `commai -l` : Long (Title + Paragraph + Bullet points)\n- `commai -e` : Gitmoji (🎨)",
+    "slide3Title": "⚙️ Advanced Configuration",
+    "slide3Text": "commai can be customized per project!\n\nCreate a `.commairc` file to define rules:\n```json\n{\n  \"rules\": [\n    \"Always use English\",\n    \"Never mention variable names in the subject line\"\n  ]\n}\n```",
+    "slide4Title": "🔗 The Git Hook",
+    "slide4Text": "Automate commai by installing it as a Git Hook!\n\nType `commai --install-hook`.\nThen, every time you run `git commit`, commai will automatically launch to generate the message for you.",
+    "slide5Title": "🚀 Let's go!",
+    "slide5Text": "You are ready to write cleaner commits in seconds.\n\nType `commai --guide` at any time to replay this tutorial.\n\nHappy coding! 💻",
+    "pressEnter": "Press Enter to continue...",
+    "finish": "Press Enter to finish"
   }
 }
